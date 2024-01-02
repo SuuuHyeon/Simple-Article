@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.article.ui.theme.ArticleTheme
 import kotlinx.coroutines.launch
 
@@ -40,7 +45,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ArticleTheme {
-                MainScreen()
+                MyNav()
             }
         }
     }
@@ -49,44 +54,7 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun MainScreen() {
-    Surface() {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .background(Color.DarkGray)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "수바리 게시판",
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Yellow)
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-            ) {
-                ArticleList()
-            }
-        }
-    }
-}
-
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-fun ArticleList() {
+fun MainScreen(navController: NavHostController) {
     // 코투린 스코프 생성
     val coroutineScope = rememberCoroutineScope()
     // 레트로핏 인스턴스 생성
@@ -108,27 +76,56 @@ fun ArticleList() {
             Log.d("API result", articles.value.toString())
         }
     }
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // articles.value 값들을 LazyColumn에 연결
-        items(articles.value) {
-            // ArticleForm에 대입
-            ArticleForm(it)
+    Surface {
+        Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .background(Color.DarkGray)
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "수바리 게시판",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color.LightGray)
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    // articles.value 값들을 LazyColumn에 연결
+                    items(articles.value) {
+                        // ArticleForm에 대입
+                        ArticleForm(it, navController)
+                    }
+                }
+            }
         }
     }
 }
 
-
 // 게시글 Form
 @Composable
-fun ArticleForm(article: Article) {
+fun ArticleForm(article: Article, navController: NavHostController) {
     // 카드 형태로 생성
     Column {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp),
+                .height(100.dp)
+                .clickable {
+                    navController.navigate("ArticleDetail")
+                },
             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
             shape = RoundedCornerShape(15.dp),
             colors = CardDefaults.cardColors(Color.White)
@@ -154,11 +151,22 @@ fun ArticleForm(article: Article) {
     }
 }
 
+// 네비게이션
+@Composable
+fun MyNav() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "mainScreen") {
+        composable("mainScreen") { MainScreen(navController = navController) }
+        composable("ArticleDetail") { Detail() }
+    }
+
+}
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     ArticleTheme {
-        MainScreen()
+        MyNav()
     }
 }
