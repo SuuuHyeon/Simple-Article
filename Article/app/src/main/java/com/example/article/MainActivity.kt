@@ -216,6 +216,39 @@ class MainActivity : ComponentActivity() {
             mutableStateOf(false)
         }
 
+        if (dialogShow) {
+            AlertDialog(
+                onDismissRequest = { },
+                title = { Text(text = "수정확인") },
+                text = { Text(text = "수정 하시겠습니까?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            dialogShow = false
+                            coroutineScope.launch {
+                                try {
+                                    val updatedArticle = Article(
+                                        id = articleID,
+                                        title = titleText,
+                                        content = titleContent,
+                                        maker = titleMaker
+                                    )
+//                                        Log.d("업데이트할 게시물", updatedArticle.toString())
+                                    updateArticle(updatedArticle, articleID)
+//                                        Log.d("수정버튼클릭", "성공")
+                                } catch (e: Exception) {
+                                    Log.d("수정버튼클릭", "에러")
+                                }
+                            }
+                            navController.navigate("mainScreen")
+                        }
+                    ) {
+                        Text(text = "확인")
+                    }
+                }
+            )
+        }
+
 
         LaunchedEffect(articleID) {
             coroutineScope.launch {
@@ -320,24 +353,8 @@ class MainActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             editing = !editing
-                            if (!editing) {
-                                coroutineScope.launch {
-                                    try {
-                                        val updatedArticle = Article(
-                                            id = articleID,
-                                            title = titleText,
-                                            content = titleContent,
-                                            maker = titleMaker
-                                        )
-//                                        Log.d("업데이트할 게시물", updatedArticle.toString())
-                                        updateArticle(updatedArticle, articleID)
-//                                        Log.d("수정버튼클릭", "성공")
-
-                                    } catch (e: Exception) {
-                                        Log.d("수정버튼클릭", "에러")
-                                    }
-                                }
-                            }
+                            if (!editing)
+                                dialogShow = true
                         },
                         colors = ButtonDefaults.buttonColors(Color.LightGray)
                     ) {
@@ -346,7 +363,7 @@ class MainActivity : ComponentActivity() {
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
                         onClick = {
-                                  navController.navigate("mainScreen")
+                            navController.navigate("mainScreen")
                         },
                         colors = ButtonDefaults.buttonColors(Color.LightGray)
                     ) {
