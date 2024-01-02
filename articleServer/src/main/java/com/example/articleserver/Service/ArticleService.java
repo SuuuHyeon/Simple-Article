@@ -1,5 +1,6 @@
 package com.example.articleserver.Service;
 
+import com.example.articleserver.DTO.ArticleDTO;
 import com.example.articleserver.entity.ArticleEntity;
 import com.example.articleserver.repository.ArticleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,5 +21,15 @@ public class ArticleService {
 
     public ArticleEntity show(Long id) {
         return articleRepository.findById(id).orElse(null);
+    }
+
+    public ArticleEntity update(Long id, ArticleDTO dto) {
+        ArticleEntity article = dto.toEntity();
+        ArticleEntity target = articleRepository.findById(id).orElse(null);
+        if (target == null || id != article.getId())
+            return null;
+        target.patch(article);
+        ArticleEntity updated = articleRepository.save(target);
+        return updated;
     }
 }

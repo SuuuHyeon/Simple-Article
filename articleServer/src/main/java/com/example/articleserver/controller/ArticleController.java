@@ -1,13 +1,14 @@
 package com.example.articleserver.controller;
 
+import com.example.articleserver.DTO.ArticleDTO;
 import com.example.articleserver.Service.ArticleService;
 import com.example.articleserver.entity.ArticleEntity;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +25,13 @@ public class ArticleController {
     @GetMapping("/articles/{id}")
     public ArticleEntity show(@PathVariable Long id) {
         return articleService.show(id);
+    }
+
+    @PatchMapping("/articles/{id}")
+    public ResponseEntity<ArticleEntity> update(@PathVariable Long id, @RequestBody ArticleDTO dto) {
+        ArticleEntity updated = articleService.update(id, dto);
+        return (updated != null) ?
+                ResponseEntity.status(HttpStatus.OK).body(updated) :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }
