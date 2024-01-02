@@ -9,6 +9,17 @@ data class Article(
     val id: String, val title: String, val content: String, val maker: String
 )
 
+//fun getArticleById(articleID: String) : Article {
+//
+//}
+
+
+
+
+
+
+
+
 object RetrofitInstance {
 
     val BASE_URL = "http://192.168.0.10:8080"
