@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,7 +27,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -77,7 +74,7 @@ fun MainScreen(navController: NavHostController) {
     // 코투린 시작
     coroutineScope.launch {
         // api 호출해서 값 가져오기
-        val response = retrofitInstance.getArticles()
+        val response = retrofitInstance.getArticleList()
         // 가져온 값 result에 저장
         val result = response.body()
         if (result != null) {
@@ -171,10 +168,10 @@ fun MyNav() {
         composable("mainScreen") { MainScreen(navController = navController) }
         composable(
             route = "ArticleDetail/{articleID}",
-            arguments = listOf(navArgument("articleID"){
+            arguments = listOf(navArgument("articleID") {
                 type = NavType.StringType
             })
-        ) {backStackEntry ->
+        ) { backStackEntry ->
             val articleID = backStackEntry.arguments?.getString("articleID")
             Log.d("articleID : ", articleID.toString())
             articleID?.let {
@@ -187,16 +184,26 @@ fun MyNav() {
 
 
 // Article 상세 페이지
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Detail(articleID: String) {
 
-
-
-//    LaunchedEffect(articleID) {
-//        val article = getArticleById(articleId)
-//        articleState = article
-//    }
+    val coroutineScope = rememberCoroutineScope()
+    val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
+    val article = remember {
+        mutableStateOf<Article?>(null)
+    }
+    coroutineScope.launch {
+        val response = retrofitInstance.getArticle(articleID)
+        val result = response.body()
+        if (result != null) {
+            article.value = result
+            Log.d("단일article : ", article.value.toString())
+        } else {
+            Log.d("단일article 조회 오류", article.value.toString())
+        }
+    }
 
     var titleText by remember {
         mutableStateOf("")
@@ -204,7 +211,6 @@ fun Detail(articleID: String) {
     var titleContent by remember {
         mutableStateOf("")
     }
-
 
     Column(
         modifier = Modifier
@@ -245,13 +251,17 @@ fun Detail(articleID: String) {
                 ) {
                     Text(text = "제목")
                 }
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = titleText,
-                    onValueChange = {
-                        titleText = it
-                    },
-                )
+                article.value?.let {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        enabled = false,
+                        value = it.title,
+                        onValueChange = {
+                            titleText = it
+                        },
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
             // 내용
@@ -262,21 +272,24 @@ fun Detail(articleID: String) {
                 ) {
                     Text(text = "내용")
                 }
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    value = titleContent,
-                    onValueChange = {
-                        titleContent = it
-                    },
-                )
+                article.value?.let {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        enabled = false,
+                        value = it.content,
+                        onValueChange = {
+                            titleContent = it
+                        },
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
-            ){
+            ) {
                 Text(text = "번호 : $articleID")
             }
         }
