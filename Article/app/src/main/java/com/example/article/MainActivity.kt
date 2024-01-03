@@ -20,15 +20,23 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -37,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +59,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.article.ui.theme.ArticleTheme
 import kotlinx.coroutines.launch
+import retrofit2.http.Body
 import java.lang.Exception
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +72,32 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // 네비게이션
+    @Composable
+    fun MyNav() {
+        val navController = rememberNavController()
 
+        NavHost(navController = navController, startDestination = "mainScreen") {
+            composable("mainScreen") { MainScreen(navController = navController) }
+            composable("ArticleCreate") { ArticleCreate() }
+            composable(
+                route = "ArticleDetail/{articleID}",
+                arguments = listOf(navArgument("articleID") {
+                    type = NavType.StringType
+                })
+            ) { backStackEntry ->
+                val articleID = backStackEntry.arguments?.getString("articleID")
+                Log.d("articleID : ", articleID.toString())
+                articleID?.let {
+                    Detail(articleID = it, navController)
+                }
+            }
+        }
+
+    }
+
+    // 메인화면
+    @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     @Composable
     fun MainScreen(navController: NavHostController) {
@@ -87,23 +122,15 @@ class MainActivity : ComponentActivity() {
                 Log.d("API result", articles.value.toString())
             }
         }
-        Surface {
-            Column {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(70.dp)
-                        .background(Color.DarkGray)
-                        .padding(20.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "수바리 게시판",
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+        Scaffold(
+            topBar = { TopBar() },
+            floatingActionButton = {
+                MyFloatingActionButton(navController)
+            }
+        ) { paddingValue ->
+            Column(
+                modifier = Modifier.padding(paddingValue)
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -121,8 +148,19 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun TopBar() {
+        TopAppBar(
+            title = {
+                Text(text = "게시글", fontSize = 25.sp, fontWeight = FontWeight.Bold)
+            },
+        )
     }
 
     // 게시글 Form
@@ -163,228 +201,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 네비게이션
     @Composable
-    fun MyNav() {
-        val navController = rememberNavController()
-
-        NavHost(navController = navController, startDestination = "mainScreen") {
-            composable("mainScreen") { MainScreen(navController = navController) }
-            composable(
-                route = "ArticleDetail/{articleID}",
-                arguments = listOf(navArgument("articleID") {
-                    type = NavType.StringType
-                })
-            ) { backStackEntry ->
-                val articleID = backStackEntry.arguments?.getString("articleID")
-                Log.d("articleID : ", articleID.toString())
-                articleID?.let {
-                    Detail(articleID = it, navController)
+    fun MyFloatingActionButton(navController: NavHostController) {
+        FloatingActionButton(
+            onClick = {
+                try {
+                    navController.navigate("ArticleCreate")
+                } catch (e: Exception) {
+                    Log.d("생성페이지", e.printStackTrace().toString())
                 }
-            }
-        }
-
-    }
-
-
-    // Article 상세 페이지
-    @SuppressLint("CoroutineCreationDuringComposition")
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun Detail(articleID: String, navController: NavHostController) {
-
-        val coroutineScope = rememberCoroutineScope()
-        val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
-        val article = remember {
-            mutableStateOf<Article?>(null)
-        }
-        var titleText by remember {
-            mutableStateOf("")
-        }
-        var titleContent by remember {
-            mutableStateOf("")
-        }
-        var titleMaker by remember {
-            mutableStateOf("")
-        }
-
-        var editing by remember {
-            mutableStateOf(false)
-        }
-
-        var dialogShow by remember {
-            mutableStateOf(false)
-        }
-
-        if (dialogShow) {
-            AlertDialog(
-                onDismissRequest = { },
-                title = { Text(text = "수정확인") },
-                text = { Text(text = "수정 하시겠습니까?") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            dialogShow = false
-                            coroutineScope.launch {
-                                try {
-                                    val updatedArticle = Article(
-                                        id = articleID,
-                                        title = titleText,
-                                        content = titleContent,
-                                        maker = titleMaker
-                                    )
-//                                        Log.d("업데이트할 게시물", updatedArticle.toString())
-                                    updateArticle(updatedArticle, articleID)
-//                                        Log.d("수정버튼클릭", "성공")
-                                } catch (e: Exception) {
-                                    Log.d("수정버튼클릭", "에러")
-                                }
-                            }
-                            navController.navigate("mainScreen")
-                        }
-                    ) {
-                        Text(text = "확인")
-                    }
-                }
-            )
-        }
-
-
-        LaunchedEffect(articleID) {
-            coroutineScope.launch {
-                val response = retrofitInstance.getArticle(articleID)
-                val result = response.body()
-                if (result != null) {
-                    article.value = result
-                    titleText = result.title
-                    titleContent = result.content
-                    titleMaker = result.maker
-                    Log.d("단일article : ", article.value.toString())
-                } else {
-                    Log.d("단일article 조회 오류", article.value.toString())
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
+            },
         ) {
-            // 상세페이지 제목
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .background(color = Color.DarkGray)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "게시글 상세페이지",
-                        fontSize = 25.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-            // body
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                // 제목
-                Row {
-                    Box(
-                        modifier = Modifier
-                            .width(50.dp)
-                    ) {
-                        Text(text = "제목")
-                    }
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        enabled = editing,
-                        value = titleText,
-                        onValueChange = {
-                            titleText = it
-                        },
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                // 내용
-                Row {
-                    Box(
-                        modifier = Modifier
-                            .width(50.dp)
-                    ) {
-                        Text(text = "내용")
-                    }
-
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        enabled = editing,
-                        value = titleContent,
-                        onValueChange = {
-                            titleContent = it
-                        },
-                    )
-
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(text = "번호 : $articleID")
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            editing = !editing
-                            if (!editing)
-                                dialogShow = true
-                        },
-                        colors = ButtonDefaults.buttonColors(Color.LightGray)
-                    ) {
-                        Text(text = "수정하기", fontSize = 15.sp, color = Color.Black)
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Button(
-                        onClick = {
-                            navController.navigate("mainScreen")
-                        },
-                        colors = ButtonDefaults.buttonColors(Color.LightGray)
-                    ) {
-                        Text(text = "게시글 리스트", fontSize = 15.sp, color = Color.Black)
-                    }
-                }
-            }
+            Icon(Icons.Default.Add, contentDescription = "create")
         }
     }
-
-    private suspend fun updateArticle(article: Article, articleID: String): Article? {
-
-        val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
-        val response = retrofitInstance.updateArticle(articleID, article)
-        Log.d("articleID 값 : ", articleID)
-        Log.d("response.body", response.toString())
-        return if (response.isSuccessful) response.body() else null
-
-    }
-
-
 }
 
 //
