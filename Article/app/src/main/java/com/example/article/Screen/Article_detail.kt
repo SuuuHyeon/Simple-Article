@@ -1,4 +1,4 @@
-package com.example.article
+package com.example.article.Screen
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -36,6 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.article.Article
+import com.example.article.MyApi
+import com.example.article.RetrofitInstance
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -126,9 +129,9 @@ fun Detail(articleID: String, navController: NavHostController) {
         }
     }
 
-    Scaffold (
-        topBar = {TopBar(navController = navController)},
-    ){paddingValues ->
+    Scaffold(
+        topBar = { TopBar(navController = navController) },
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -201,7 +204,10 @@ fun Detail(articleID: String, navController: NavHostController) {
                         },
                         colors = ButtonDefaults.buttonColors(Color.LightGray)
                     ) {
-                        Text(text = "수정하기", fontSize = 15.sp, color = Color.Black)
+                        if (editing)
+                            Text(text = "수정완료", fontSize = 15.sp, color = Color.Black)
+                        else
+                            Text(text = "수정", fontSize = 15.sp, color = Color.Black)
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(

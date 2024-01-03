@@ -32,4 +32,11 @@ public class ArticleService {
         ArticleEntity updated = articleRepository.save(target);
         return updated;
     }
+
+    public ArticleEntity create(ArticleDTO dto) {
+        ArticleEntity article = dto.toEntity();
+        if (article.getId() != null)
+            return null;
+        return articleRepository.save(article);
+    }
 }
