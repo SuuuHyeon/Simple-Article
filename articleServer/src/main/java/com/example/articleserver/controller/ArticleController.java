@@ -43,4 +43,12 @@ public class ArticleController {
                 ResponseEntity.status(HttpStatus.OK).body(created) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
+
+    @DeleteMapping("/articles/{id}")
+    public ResponseEntity<ArticleEntity> delete(@PathVariable Long id) {
+        ArticleEntity deleted = articleService.delete(id);
+        return (deleted != null) ?
+                ResponseEntity.status(HttpStatus.OK).build() :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
 }

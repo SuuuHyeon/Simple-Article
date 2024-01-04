@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -43,6 +44,10 @@ interface MyApi {
     suspend fun updateArticle(@Path("id") id: String, @Body article: Article): Response<Article>
 
     // 생성
-    @POST("articles")
+    @POST("/articles")
     suspend fun createArticle(@Body article: Article): Response<Article>
+
+    // 삭제
+    @DELETE("/articles/{id}")
+    suspend fun deleteArticle(@Path("id") id: String): Response<Article>
 }

@@ -37,6 +37,7 @@ import androidx.navigation.NavHostController
 import com.example.article.Article
 import com.example.article.MyApi
 import com.example.article.RetrofitInstance
+import com.example.article.Screen.TopBar.TopBar
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -102,9 +103,8 @@ fun ArticleCreate(navController: NavHostController) {
 
 
     Scaffold(
-        topBar = { TopBar_create(navController = navController) },
-
-    ) { paddingValues ->
+        topBar = { TopBar(screen = "create", navController = navController) },
+        ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,23 +181,5 @@ fun ArticleCreate(navController: NavHostController) {
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar_create(navController: NavHostController) {
-    TopAppBar(
-        title = { Text(text = "게시글 생성") },
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(
-                    Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "뒤로가기"
-                )
-            }
-        }
-    )
 }
 

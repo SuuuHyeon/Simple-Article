@@ -39,4 +39,12 @@ public class ArticleService {
             return null;
         return articleRepository.save(article);
     }
+
+    public ArticleEntity delete(Long id) {
+        ArticleEntity target = articleRepository.findById(id).orElse(null);
+        if (target == null)
+            return null;
+        articleRepository.delete(target);
+        return target;
+    }
 }

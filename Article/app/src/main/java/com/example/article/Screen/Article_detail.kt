@@ -39,6 +39,9 @@ import androidx.navigation.NavHostController
 import com.example.article.Article
 import com.example.article.MyApi
 import com.example.article.RetrofitInstance
+import com.example.article.Screen.TopBar.TopBar
+import com.example.article.deleteArticle
+import com.example.article.updateArticle
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -47,14 +50,6 @@ import java.lang.Exception
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Detail(articleID: String, navController: NavHostController) {
-
-    suspend fun updateArticle(article: Article, articleID: String): Article? {
-        val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
-        val response = retrofitInstance.updateArticle(articleID, article)
-        Log.d("articleID 값 : ", articleID)
-        Log.d("response.body", response.toString())
-        return if (response.isSuccessful) response.body() else null
-    }
 
     val coroutineScope = rememberCoroutineScope()
     val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
@@ -77,6 +72,36 @@ fun Detail(articleID: String, navController: NavHostController) {
 
     var dialogShow by remember {
         mutableStateOf(false)
+    }
+
+    var deleteshow by remember {
+        mutableStateOf(false)
+    }
+
+    if (deleteshow) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text(text = "삭제") },
+            text = { Text(text = "삭제 하시겠습니까?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            try {
+                                deleteArticle(articleID)
+                                Log.d("삭제", "삭제버튼클릭")
+                            } catch (e: Exception) {
+                                Log.d("삭제에러", e.printStackTrace().toString())
+                            }
+                        }
+                        navController.navigate("mainScreen")
+                        deleteshow = false
+                    }
+                ) {
+                    Text(text = "확인")
+                }
+            }
+        )
     }
 
     if (dialogShow) {
@@ -130,7 +155,7 @@ fun Detail(articleID: String, navController: NavHostController) {
     }
 
     Scaffold(
-        topBar = { TopBar(navController = navController) },
+        topBar = { TopBar(screen = "detail", navController = navController) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -219,25 +244,16 @@ fun Detail(articleID: String, navController: NavHostController) {
                         Text(text = "게시글 리스트", fontSize = 15.sp, color = Color.Black)
                     }
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        deleteshow = true
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Red)
+                ) {
+                    Text(text = "삭제", fontSize = 15.sp, color = Color.White)
+                }
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TopBar(navController: NavHostController) {
-    TopAppBar(
-        title = { Text(text = "수바리 게시판") },
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(
-                    Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "뒤로가기"
-                )
-            }
-        }
-    )
 }

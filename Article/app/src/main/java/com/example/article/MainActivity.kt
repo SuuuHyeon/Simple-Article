@@ -46,6 +46,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.article.Screen.ArticleCreate
 import com.example.article.Screen.Detail
+import com.example.article.Screen.TopBar.TopBar
 import com.example.article.ui.theme.ArticleTheme
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -91,8 +92,6 @@ class MainActivity : ComponentActivity() {
     fun MainScreen(navController: NavHostController) {
         // 코투린 스코프 생성
         val coroutineScope = rememberCoroutineScope()
-        // 레트로핏 인스턴스 생성
-        val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
         // 리스트 저장변수 생성
         val articles = remember {
             mutableStateOf(listOf<Article>())
@@ -100,6 +99,8 @@ class MainActivity : ComponentActivity() {
 
         // 코투린 시작
         coroutineScope.launch {
+            // 레트로핏 인스턴스 생성
+            val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
             // api 호출해서 값 가져오기
             val response = retrofitInstance.getArticleList()
             // 가져온 값 result에 저장
@@ -111,7 +112,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         Scaffold(
-            topBar = { TopBar() },
+            topBar = { TopBar(screen = "main", navController = navController) },
             floatingActionButton = {
                 MyFloatingActionButton(navController)
             }
@@ -120,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier
                     .padding(paddingValue)
                     .fillMaxSize()
-                    .background(color = Color.LightGray)
+                    .background(color = Color.White)
                     .padding(horizontal = 15.dp, vertical = 10.dp)
             ) {
                 LazyColumn(
@@ -137,16 +138,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun TopBar() {
-        TopAppBar(
-            title = {
-                Text(text = "게시글", fontSize = 25.sp, fontWeight = FontWeight.Bold)
-            },
-        )
-    }
-
     // 게시글 Form
     @Composable
     fun ArticleForm(article: Article, navController: NavHostController) {
@@ -160,7 +151,7 @@ class MainActivity : ComponentActivity() {
                         // 경로 지정
                         navController.navigate("ArticleDetail/${article.id}")
                     },
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
                 shape = RoundedCornerShape(15.dp),
                 colors = CardDefaults.cardColors(Color.White)
             ) {
