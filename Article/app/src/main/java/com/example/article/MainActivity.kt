@@ -29,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,19 +98,22 @@ class MainActivity : ComponentActivity() {
         }
 
         // 코투린 시작
-        coroutineScope.launch {
-            // 레트로핏 인스턴스 생성
-            val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
-            // api 호출해서 값 가져오기
-            val response = retrofitInstance.getArticleList()
-            // 가져온 값 result에 저장
-            val result = response.body()
-            if (result != null) {
-                // result를 articles의 value에 대입
-                articles.value = result
-                Log.d("API result", articles.value.toString())
+        LaunchedEffect(articles) {
+            coroutineScope.launch {
+                // 레트로핏 인스턴스 생성
+                val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
+                // api 호출해서 값 가져오기
+                val response = retrofitInstance.getArticleList()
+                // 가져온 값 result에 저장
+                val result = response.body()
+                if (result != null) {
+                    // result를 articles의 value에 대입
+                    articles.value = result
+                    Log.d("article 리스트", articles.value.toString())
+                }
             }
         }
+
         Scaffold(
             topBar = { TopBar(screen = "main", navController = navController) },
             floatingActionButton = {

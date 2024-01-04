@@ -22,9 +22,26 @@ fun TopBar(screen: String, navController: NavHostController) {
     TopAppBar(
         title = {
             when (screen) {
-                "main" -> Text(text = "글 목록", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                "detail" -> Text(text = "글 수정", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                "create" -> Text(text = "글 생성", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                "main" -> Text(
+                    text = "글 목록",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                "detail" -> Text(
+                    text = "글 수정",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                "create" -> Text(
+                    text = "글 생성",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         },
         navigationIcon = {

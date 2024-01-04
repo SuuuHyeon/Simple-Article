@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,76 +47,37 @@ import java.lang.Exception
 fun Detail(articleID: String, navController: NavHostController) {
 
     val coroutineScope = rememberCoroutineScope()
-    val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
     val article = remember {
         mutableStateOf<Article?>(null)
     }
+    // 글 제목
     var titleText by remember {
         mutableStateOf("")
     }
+    // 글 내용
     var contentText by remember {
         mutableStateOf("")
     }
+    // 글쓴이
     var maker by remember {
         mutableStateOf("")
     }
-
+    // 텍스트필드 활성화 / 비활성화를 위해 사용하는 변수
     var editing by remember {
         mutableStateOf(false)
     }
-
+    // 수정 버튼이 눌렸는지 저장하는 변수
     var dialogShow by remember {
         mutableStateOf(false)
     }
-
-    var deleteshow by remember {
+    // 삭제 버튼이 눌렸는지 저장하는 변수
+    var updateShow by remember {
         mutableStateOf(false)
     }
 
-    if (deleteshow) {
-        CrudDialog(
-            crud = "삭제",
-            onConfirm = {
-                coroutineScope.launch {
-                    try {
-                        deleteArticle(articleID)
-                    } catch (e: Exception) {
-                        Log.d("삭제에러", e.printStackTrace().toString())
-                    }
-                }
-                navController.navigate("mainScreen")
-            },
-            onDismiss = { deleteshow = false },
-        )
-    }
-
-    if (dialogShow) {
-        CrudDialog(
-            crud = "수정",
-            onConfirm = {
-                coroutineScope.launch {
-                    try {
-                        val updatedArticle = Article(
-                            id = articleID,
-                            title = titleText,
-                            content = contentText,
-                            maker = maker
-                        )
-                        // 글 수정
-                        updateArticle(updatedArticle, articleID)
-                    } catch (e: Exception) {
-                        Log.d("업데이트 에러", e.printStackTrace().toString())
-                    }
-                }
-                navController.navigate("mainScreen")
-            },
-            onDismiss = { dialogShow = false }
-        )
-    }
-
-
     LaunchedEffect(articleID) {
         coroutineScope.launch {
+            val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
             val response = retrofitInstance.getArticle(articleID)
             val result = response.body()
             if (result != null) {
@@ -225,7 +185,7 @@ fun Detail(articleID: String, navController: NavHostController) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        deleteshow = true
+                        updateShow = true
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red)
                 ) {
@@ -233,5 +193,47 @@ fun Detail(articleID: String, navController: NavHostController) {
                 }
             }
         }
+    }
+    //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    // 수정 버튼을 눌렀을 때 로직
+    if (dialogShow) {
+        CrudDialog(
+            crud = "수정",
+            onConfirm = {
+                coroutineScope.launch {
+                    try {
+                        val updatedArticle = Article(
+                            id = articleID,
+                            title = titleText,
+                            content = contentText,
+                            maker = maker
+                        )
+                        // 글 수정
+                        updateArticle(updatedArticle, articleID)
+                    } catch (e: Exception) {
+                        Log.d("업데이트 에러", e.printStackTrace().toString())
+                    }
+                }
+                navController.navigate("mainScreen")
+            },
+            onDismiss = { dialogShow = false }
+        )
+    }
+    // 삭제 버튼을 눌렀을 때 로직
+    if (updateShow) {
+        CrudDialog(
+            crud = "삭제",
+            onConfirm = {
+                coroutineScope.launch {
+                    try {
+                        deleteArticle(articleID)
+                    } catch (e: Exception) {
+                        Log.d("삭제에러", e.printStackTrace().toString())
+                    }
+                }
+                navController.navigate("mainScreen")
+            },
+            onDismiss = { updateShow = false },
+        )
     }
 }
