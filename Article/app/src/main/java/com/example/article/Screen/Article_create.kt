@@ -11,18 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +31,7 @@ import androidx.navigation.NavHostController
 import com.example.article.Article
 import com.example.article.MyApi
 import com.example.article.RetrofitInstance
+import com.example.article.Screen.dialog.CrudDialog
 import com.example.article.Screen.TopBar.TopBar
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -69,42 +64,63 @@ fun ArticleCreate(navController: NavHostController) {
     }
 
     if (dialogShow) {
-        AlertDialog(
-            onDismissRequest = { },
-            title = { Text(text = "업로드") },
-            text = { Text(text = "업로드 하시겠습니까?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        dialogShow = false
-                        coroutineScope.launch {
-                            try {
-                                val createdArticle = Article(
-                                    id = "",
-                                    title = titleText,
-                                    content = titleContent,
-                                    maker = titleMaker
-                                )
-                                // 글 생성
-                                createArticle(createdArticle)
-                            } catch (e: Exception) {
-                                Log.d("생성버튼", e.printStackTrace().toString())
-                            }
-                        }
-                        navController.navigate("mainScreen")
+        CrudDialog(
+            crud = "생성",
+            onConfirm = {
+                coroutineScope.launch {
+                    try {
+                        val createdArticle = Article(
+                            id = "",
+                            title = titleText,
+                            content = titleContent,
+                            maker = titleMaker
+                        )
+                        // 글 생성
+                        createArticle(createdArticle)
+                    } catch (e: Exception) {
+                        Log.d("생성버튼", e.printStackTrace().toString())
                     }
-                ) {
-                    Text(text = "확인")
                 }
-            }
+                navController.navigate("mainScreen")
+            },
+            onDismiss = { dialogShow = false }
         )
+        //        AlertDialog(
+//            onDismissRequest = { },
+//            title = { Text(text = "업로드") },
+//            text = { Text(text = "업로드 하시겠습니까?") },
+//            confirmButton = {
+//                Button(
+//                    onClick = {
+//                        dialogShow = false
+//                        coroutineScope.launch {
+//                            try {
+//                                val createdArticle = Article(
+//                                    id = "",
+//                                    title = titleText,
+//                                    content = titleContent,
+//                                    maker = titleMaker
+//                                )
+//                                // 글 생성
+//                                createArticle(createdArticle)
+//                            } catch (e: Exception) {
+//                                Log.d("생성버튼", e.printStackTrace().toString())
+//                            }
+//                        }
+//                        navController.navigate("mainScreen")
+//                    }
+//                ) {
+//                    Text(text = "확인")
+//                }
+//            }
+//        )
     }
 
 
 
     Scaffold(
         topBar = { TopBar(screen = "create", navController = navController) },
-        ) { paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

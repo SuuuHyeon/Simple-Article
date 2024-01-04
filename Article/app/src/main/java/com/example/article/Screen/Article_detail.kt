@@ -12,18 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +35,7 @@ import com.example.article.Article
 import com.example.article.MyApi
 import com.example.article.RetrofitInstance
 import com.example.article.Screen.TopBar.TopBar
+import com.example.article.Screen.dialog.CrudDialog
 import com.example.article.deleteArticle
 import com.example.article.updateArticle
 import kotlinx.coroutines.launch
@@ -59,10 +55,10 @@ fun Detail(articleID: String, navController: NavHostController) {
     var titleText by remember {
         mutableStateOf("")
     }
-    var titleContent by remember {
+    var contentText by remember {
         mutableStateOf("")
     }
-    var titleMaker by remember {
+    var maker by remember {
         mutableStateOf("")
     }
 
@@ -79,61 +75,43 @@ fun Detail(articleID: String, navController: NavHostController) {
     }
 
     if (deleteshow) {
-        AlertDialog(
-            onDismissRequest = { },
-            title = { Text(text = "삭제") },
-            text = { Text(text = "삭제 하시겠습니까?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            try {
-                                deleteArticle(articleID)
-                                Log.d("삭제", "삭제버튼클릭")
-                            } catch (e: Exception) {
-                                Log.d("삭제에러", e.printStackTrace().toString())
-                            }
-                        }
-                        navController.navigate("mainScreen")
-                        deleteshow = false
+        CrudDialog(
+            crud = "삭제",
+            onConfirm = {
+                coroutineScope.launch {
+                    try {
+                        deleteArticle(articleID)
+                    } catch (e: Exception) {
+                        Log.d("삭제에러", e.printStackTrace().toString())
                     }
-                ) {
-                    Text(text = "확인")
                 }
-            }
+                navController.navigate("mainScreen")
+            },
+            onDismiss = { deleteshow = false },
         )
     }
 
     if (dialogShow) {
-        AlertDialog(
-            onDismissRequest = { },
-            title = { Text(text = "수정확인") },
-            text = { Text(text = "수정 하시겠습니까?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        dialogShow = false
-                        coroutineScope.launch {
-                            try {
-                                val updatedArticle = Article(
-                                    id = articleID,
-                                    title = titleText,
-                                    content = titleContent,
-                                    maker = titleMaker
-                                )
-//                                        Log.d("업데이트할 게시물", updatedArticle.toString())
-                                updateArticle(updatedArticle, articleID)
-//                                        Log.d("수정버튼클릭", "성공")
-                            } catch (e: Exception) {
-                                Log.d("수정버튼클릭", "에러")
-                            }
-                        }
-                        navController.navigate("mainScreen")
+        CrudDialog(
+            crud = "수정",
+            onConfirm = {
+                coroutineScope.launch {
+                    try {
+                        val updatedArticle = Article(
+                            id = articleID,
+                            title = titleText,
+                            content = contentText,
+                            maker = maker
+                        )
+                        // 글 수정
+                        updateArticle(updatedArticle, articleID)
+                    } catch (e: Exception) {
+                        Log.d("업데이트 에러", e.printStackTrace().toString())
                     }
-                ) {
-                    Text(text = "확인")
                 }
-            }
+                navController.navigate("mainScreen")
+            },
+            onDismiss = { dialogShow = false }
         )
     }
 
@@ -145,8 +123,8 @@ fun Detail(articleID: String, navController: NavHostController) {
             if (result != null) {
                 article.value = result
                 titleText = result.title
-                titleContent = result.content
-                titleMaker = result.maker
+                contentText = result.content
+                maker = result.maker
                 Log.d("단일article : ", article.value.toString())
             } else {
                 Log.d("단일article 조회 오류", article.value.toString())
@@ -155,7 +133,7 @@ fun Detail(articleID: String, navController: NavHostController) {
     }
 
     Scaffold(
-        topBar = { TopBar(screen = "detail", navController = navController) },
+        topBar = { TopBar("detail", navController) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -201,9 +179,9 @@ fun Detail(articleID: String, navController: NavHostController) {
                             .fillMaxWidth()
                             .height(200.dp),
                         enabled = editing,
-                        value = titleContent,
+                        value = contentText,
                         onValueChange = {
-                            titleContent = it
+                            contentText = it
                         },
                     )
 
