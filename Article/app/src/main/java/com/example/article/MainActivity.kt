@@ -46,6 +46,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.article.Screen.ArticleCreate
 import com.example.article.Screen.Detail
+import com.example.article.Screen.MainScreen
 import com.example.article.Screen.TopBar.TopBar
 import com.example.article.ui.theme.ArticleTheme
 import kotlinx.coroutines.launch
@@ -60,7 +61,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     // 네비게이션
     @Composable
     fun MyNav() {
@@ -81,116 +81,6 @@ class MainActivity : ComponentActivity() {
                     Detail(articleID = it, navController)
                 }
             }
-        }
-
-    }
-
-    // 메인화면
-    @OptIn(ExperimentalMaterial3Api::class)
-    @SuppressLint("CoroutineCreationDuringComposition")
-    @Composable
-    fun MainScreen(navController: NavHostController) {
-        // 코투린 스코프 생성
-        val coroutineScope = rememberCoroutineScope()
-        // 리스트 저장변수 생성
-        val articles = remember {
-            mutableStateOf(listOf<Article>())
-        }
-
-        // 코투린 시작
-        LaunchedEffect(articles) {
-            coroutineScope.launch {
-                // 레트로핏 인스턴스 생성
-                val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
-                // api 호출해서 값 가져오기
-                val response = retrofitInstance.getArticleList()
-                // 가져온 값 result에 저장
-                val result = response.body()
-                if (result != null) {
-                    // result를 articles의 value에 대입
-                    articles.value = result
-                    Log.d("article 리스트", articles.value.toString())
-                }
-            }
-        }
-
-        Scaffold(
-            topBar = { TopBar(screen = "main", navController = navController) },
-            floatingActionButton = {
-                MyFloatingActionButton(navController)
-            }
-        ) { paddingValue ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingValue)
-                    .fillMaxSize()
-                    .background(color = Color.White)
-                    .padding(horizontal = 15.dp, vertical = 10.dp)
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    // articles.value 값들을 LazyColumn에 연결
-                    items(articles.value) {
-                        // ArticleForm에 대입
-                        ArticleForm(it, navController)
-                    }
-                }
-            }
-        }
-    }
-
-    // 게시글 Form
-    @Composable
-    fun ArticleForm(article: Article, navController: NavHostController) {
-        // 카드 형태로 생성
-        Column {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(130.dp)
-                    .clickable {
-                        // 경로 지정
-                        navController.navigate("ArticleDetail/${article.id}")
-                    },
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                shape = RoundedCornerShape(15.dp),
-                colors = CardDefaults.cardColors(Color.White)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = article.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = article.content, fontSize = 15.sp)
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(text = article.maker, fontSize = 11.sp, color = Color.Gray)
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-    }
-
-    @Composable
-    fun MyFloatingActionButton(navController: NavHostController) {
-        FloatingActionButton(
-            onClick = {
-                try {
-                    navController.navigate("ArticleCreate")
-                } catch (e: Exception) {
-                    Log.d("생성페이지", e.printStackTrace().toString())
-                }
-            },
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "create")
         }
     }
 }

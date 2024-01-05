@@ -67,11 +67,11 @@ fun Detail(articleID: String, navController: NavHostController) {
         mutableStateOf(false)
     }
     // 수정 버튼이 눌렸는지 저장하는 변수
-    var dialogShow by remember {
+    var updateShow by remember {
         mutableStateOf(false)
     }
     // 삭제 버튼이 눌렸는지 저장하는 변수
-    var updateShow by remember {
+    var deleteShow by remember {
         mutableStateOf(false)
     }
 
@@ -163,7 +163,7 @@ fun Detail(articleID: String, navController: NavHostController) {
                         onClick = {
                             editing = !editing
                             if (!editing)
-                                dialogShow = true
+                                updateShow = true
                         },
                         colors = ButtonDefaults.buttonColors(Color.LightGray)
                     ) {
@@ -185,7 +185,7 @@ fun Detail(articleID: String, navController: NavHostController) {
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = {
-                        updateShow = true
+                        deleteShow = true
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red)
                 ) {
@@ -196,7 +196,7 @@ fun Detail(articleID: String, navController: NavHostController) {
     }
     //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 수정 버튼을 눌렀을 때 로직
-    if (dialogShow) {
+    if (updateShow) {
         CrudDialog(
             crud = "수정",
             onConfirm = {
@@ -216,24 +216,25 @@ fun Detail(articleID: String, navController: NavHostController) {
                 }
                 navController.navigate("mainScreen")
             },
-            onDismiss = { dialogShow = false }
+            onDismiss = { updateShow = false }
         )
     }
     // 삭제 버튼을 눌렀을 때 로직
-    if (updateShow) {
+    if (deleteShow) {
         CrudDialog(
             crud = "삭제",
             onConfirm = {
                 coroutineScope.launch {
                     try {
                         deleteArticle(articleID)
+                        Log.d("삭제성공", "")
                     } catch (e: Exception) {
-                        Log.d("삭제에러", e.printStackTrace().toString())
+                        Log.d("삭제에러", "${e.message}")
                     }
                 }
                 navController.navigate("mainScreen")
             },
-            onDismiss = { updateShow = false },
+            onDismiss = { deleteShow = false },
         )
     }
 }

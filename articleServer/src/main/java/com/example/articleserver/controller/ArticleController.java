@@ -18,24 +18,19 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+    // 게시글 조회
     @GetMapping("/articles")
     public List<ArticleEntity> index() {
         return articleService.index();
     }
 
+    // 게시글 단일 조회
     @GetMapping("/articles/{id}")
     public ArticleEntity show(@PathVariable Long id) {
         return articleService.show(id);
     }
 
-    @PatchMapping("/articles/{id}")
-    public ResponseEntity<ArticleEntity> update(@PathVariable Long id, @RequestBody ArticleDTO dto) {
-        ArticleEntity updated = articleService.update(id, dto);
-        return (updated != null) ?
-                ResponseEntity.status(HttpStatus.OK).body(updated) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    }
-
+    // 게시글 생성
     @PostMapping("/articles")
     public ResponseEntity<ArticleEntity> create(@RequestBody ArticleDTO dto) {
         ArticleEntity created = articleService.create(dto);
@@ -44,11 +39,21 @@ public class ArticleController {
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
+    // 게시글 수정
+    @PatchMapping("/articles/{id}")
+    public ResponseEntity<ArticleEntity> update(@PathVariable Long id, @RequestBody ArticleDTO dto) {
+        ArticleEntity updated = articleService.update(id, dto);
+        return (updated != null) ?
+                ResponseEntity.status(HttpStatus.OK).body(updated) :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    // 게시글 삭제
     @DeleteMapping("/articles/{id}")
     public ResponseEntity<ArticleEntity> delete(@PathVariable Long id) {
         ArticleEntity deleted = articleService.delete(id);
         return (deleted != null) ?
-                ResponseEntity.status(HttpStatus.OK).build() :
+                ResponseEntity.status(HttpStatus.OK).body(deleted) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }

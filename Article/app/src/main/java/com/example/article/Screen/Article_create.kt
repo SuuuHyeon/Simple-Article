@@ -78,7 +78,7 @@ fun ArticleCreate(navController: NavHostController) {
                         // 글 생성
                         createArticle(createdArticle)
                     } catch (e: Exception) {
-                        Log.d("생성버튼", e.printStackTrace().toString())
+                        Log.d("생성버튼", "발생에러 : ${e.message}")
                     }
                 }
                 navController.navigate("mainScreen")

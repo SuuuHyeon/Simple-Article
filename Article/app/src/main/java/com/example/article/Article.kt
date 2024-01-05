@@ -18,6 +18,7 @@ data class Article(
 object RetrofitInstance {
 
     val BASE_URL = "http://192.168.0.10:8080"
+//    val BASE_URL = "http://10.200.73.141:8080"
 
     val client = Retrofit
         .Builder()

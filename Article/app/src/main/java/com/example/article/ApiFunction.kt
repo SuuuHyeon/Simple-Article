@@ -13,6 +13,7 @@ suspend fun updateArticle(article: Article, articleID: String): Article? {
 suspend fun deleteArticle(articleID: String): Article? {
     val retrofitInstance = RetrofitInstance.getInstance().create(MyApi::class.java)
     val response = retrofitInstance.deleteArticle(articleID)
-    Log.d("삭제 articleID : ", articleID)
+//    Log.d("삭제 articleID : ", articleID)
+    Log.d("삭제 response.body", response.body().toString())
     return if (response.isSuccessful) response.body() else null
 }
