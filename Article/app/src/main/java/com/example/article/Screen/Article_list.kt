@@ -70,6 +70,8 @@ fun MainScreen(navController: NavHostController) {
                 Log.d("article 리스트", articles.value.toString())
             }
         }
+
+
     }
 
     Scaffold(
